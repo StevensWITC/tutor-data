@@ -2,14 +2,14 @@
 Some scripts to run on the tutor data to work with the data easier
 
 ##Tutor class
-__init__(self, first:string, last:string, email:string, courses:list, schedule:dictionary)
+\_\_init\_\_(self, first:string, last:string, email:string, courses:list, schedule:dictionary)
 
 Getters and setters for everything
 
-__str__ and __repr__
+\_\_str\_\_ and \_\_repr\_\_
 
 ##TutorScripts class
-**__init__(self, filename)** - calls `buildDB()` to get the info for the other functions to use
+**\_\_init\_\_(self, filename)** - calls `buildDB()` to get the info for the other functions to use
 
 **buildDB()** - returns a list of `Tutor`s based on data in `tutors.csv`
 
