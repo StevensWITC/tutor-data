@@ -1,36 +1,7 @@
 '''
 Class to represent courses for the course info page on sitstuff
 '''
-
-def file_name():
-    return 'courses.dat'
-
-def remove_spaces(my_str):
-    """Remove the spaces from the end of a string"""
-    if(my_str == ""):
-        return ""
-    if(my_str[-1] == " "):
-        return remove_spaces(my_str[:-1])
-    else:
-        return my_str
-
-def load_data():
-    """Loads the data from .dat file... get it? dat file? No? Okay..."""
-    my_dir = os.path.dirname(__file__)
-    file_path = os.path.join(my_dir, file_name() )
-    try:
-        with open(file_path) as f:
-            data = pickle.load(f)
-    except:
-        data = []
-    return data
-
-def save_data(data):
-    """Saves the data to the .dat file"""
-    my_dir = os.path.dirname(__file__)
-    file_path = os.path.join(my_dir, file_name() )
-    with open(file_path, "wb") as f:
-        pickle.dump(data, f)
+import csv
 
 class Tutor:
 
@@ -97,7 +68,13 @@ class Tutor:
         resp = "<Tutor name:{" + self._first + " " + self._last + "}>"
         return resp
 
-import csv
+
+################################################
+#                                              #
+#              [BELOW THIS POINT]              #
+#   Scripts to create the tutor courses file   #
+#                                              #
+################################################
 def buildDB():
     """
     Takes the data from a .csv file and puts it into the tutor objects
@@ -176,6 +153,7 @@ def get_course_tutor_file():
             for tutor in course_tutors[course]:
                 tutor_list += ", " + tutor
             writer.writerow([course, tutor_list])
+
 
 if __name__ == '__main__':
     get_course_tutor_file()
