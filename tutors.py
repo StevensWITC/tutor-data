@@ -17,7 +17,17 @@ class Tutor:
         self._last = last
         self._email = email
         self._courses = courses
-        self._sched = schedule
+        self._sched = self.sched_parse(schedule)
+
+    def sched_parse(self, inDict):
+        for day in inDict:
+            if not inDict[day] is '':
+                #patting myself on the back because both of these lines worked first try. They take the day which is in the format "#pm - ##pm" and et just the numbers regardless of single or double digits
+                start = inDict[day].split(" - ")[0][0:-2]
+                end = inDict[day].split(" - ")[-1][0:-2]
+                resp = start + " " + end
+                inDict[day] = resp
+        return inDict
 
     @property
     def first(self):
@@ -63,7 +73,7 @@ class Tutor:
         return self._first + " " + self._last
 
     def __repr__(self):
-        resp = "<Tutor name:{" + self._first + " " + self._last + "}>"
+        resp = "<Tutor name:{" + self._first + " " + self._last + "} sched:{" + str(self._sched) + "} courses:{" + str(self._courses) + "}>"
         return resp
 
 
@@ -72,6 +82,10 @@ class TutorScripts:
     def __init__(self, filename):
         self._filename = filename
         self._data = self.buildDB()
+
+    @property
+    def data(self):
+        return self._data
 
     def buildDB(self):
         """
@@ -151,6 +165,60 @@ class TutorScripts:
                 writer.writerow([course, tutor_list])
 
 
+def parse_sched():
+    """
+    Takes the data from a .csv file and puts it into a dictionary
+    """
+    import csv
+    fname = "sched.csv"
+    data = {}
+    with open(fname, 'rb') as f:
+        csv_read = csv.reader(f, delimiter=",")
+        count = 0
+        day = "DAY_ERROR: Day not set yet"
+        for row in csv_read:
+            if not row[0] is '':
+                day = row[0].split(" ")[0]
+            name = row[1]
+            if not name in data:
+                data[name] = {}
+            time = row[2]
+            data[name][day] = time
+    return data
+
+def make_sched():
+    """
+    Output a .csv file of tutors and when they work
+    """
+    import csv
+    sched = parse_sched()
+    with open('sched_out.csv', 'wb') as csvfile:
+        writer = csv.writer(csvfile)
+        for tutor in sched:
+            name = tutor.split(" ")[-1]
+            s = ""
+            m = ""
+            t = ""
+            w = ""
+            r = ""
+            f = ""
+            for day in sched[tutor]:
+                if day == "Monday":
+                    m = sched[tutor][day]
+                elif day == "Tuesday":
+                    t = sched[tutor][day]
+                elif day == "Wednesday":
+                    w = sched[tutor][day]
+                elif day == "Thursday":
+                    r = sched[tutor][day]
+                elif day == "Friday":
+                    f = sched[tutor][day]
+                elif day == "Sunday":
+                    s = sched[tutor][day]
+                else:
+                    m = t = w = r = f = s = "ERROR"
+            writer.writerow([name, m, t, w, r, f, s])
+
 if __name__ == '__main__':
     ###########################################################
     import time                                               #
@@ -158,7 +226,20 @@ if __name__ == '__main__':
     ###########################################################
 
     ts = TutorScripts("tutors.csv")
-    ts.get_course_tutor_file()
+    for tutor in ts.data:
+        print tutor
+        print "    " + str(tutor.courses)
+        print "    " + str(tutor.sched)
+
+    #ts.get_course_tutor_file()
+
+    #sched = parse_sched()
+    #for tutor in sched:
+    #    print tutor
+    #    for day in sched[tutor]:
+    #        print "    " + day + ":" + sched[tutor][day]
+
+    #make_sched()
 
     ###########################################################
     print "Run time: ", time.time() - start_time, " seconds"  #
