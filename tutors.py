@@ -1,7 +1,6 @@
-'''
+"""
 Class to represent courses for the course info page on sitstuff
-'''
-import csv
+"""
 
 class Tutor:
 
@@ -31,7 +30,6 @@ class Tutor:
     @property
     def email(self):
         return self._email
-
 
     @property
     def courses(self):
@@ -69,91 +67,99 @@ class Tutor:
         return resp
 
 
-################################################
-#                                              #
-#              [BELOW THIS POINT]              #
-#   Scripts to create the tutor courses file   #
-#                                              #
-################################################
-def buildDB():
-    """
-    Takes the data from a .csv file and puts it into the tutor objects
-    """
-    fname = "tutors.csv"
-    data = []
-    with open(fname, 'rb') as f:
-        csv_read = csv.reader(f, delimiter=",")
-        count = 0
-        for row in csv_read:
-            name = row[0].split(", ")
-            last = name[0]
-            first = name[-1]
+class TutorScripts:
 
-            sched = {}
-            sched["m"] = row[1]
-            sched["t"] = row[2]
-            sched["w"] = row[3]
-            sched["r"] = row[4]
-            sched["f"] = row[5]
-            sched["s"] = row[6]
+    def __init__(self, filename):
+        self._filename = filename
 
-            email = row[7]
-            courses = row[8].split(", ")
+    def buildDB(self):
+        """
+        Takes the data from a .csv file and puts it into the tutor objects
+        """
+        import csv
+        fname = self._filename
+        data = []
+        with open(fname, 'rb') as f:
+            csv_read = csv.reader(f, delimiter=",")
+            count = 0
+            for row in csv_read:
+                name = row[0].split(", ")
+                last = name[0]
+                first = name[-1]
+                sched = {}
+                sched["m"] = row[1]
+                sched["t"] = row[2]
+                sched["w"] = row[3]
+                sched["r"] = row[4]
+                sched["f"] = row[5]
+                sched["s"] = row[6]
+                email = row[7]
+                courses = row[8].split(", ")
+                tutor = Tutor(first, last, email, courses, sched)
+                data = data + [tutor]
+        return data
 
-            tutor = Tutor(first, last, email, courses, sched)
-            data = data + [tutor]
-    return data
+    def get_tutored_courses(self, data):
+        """
+        Return a list of all courses tutored now
+        data : list of 'Tutor's
+        """
+        tutored_courses = []
+        for tutor in data:
+            courses = tutor.courses
+            for course in courses:
+                if not course in tutored_courses and not course is '':#had to add the second part because it kept adding '' for some reason
+                    tutored_courses += [course]
+        return tutored_courses
 
-def get_tutored_courses(data):
-    """
-    Return a list of all courses tutored now
-    data : list of 'Tutor's
-    """
-    tutored_courses = []
-    for tutor in data:
-        courses = tutor.courses
-        for course in courses:
-            if not course in tutored_courses and not course is '':#had to add the second part because it kept adding '' for some reason
-                tutored_courses += [course]
-    return tutored_courses
+    def get_tutors(self, course, data):
+        """
+        Return a list of all the tutors for a given course
+        course : string
+        """
+        tutors = []
+        for tutor in data:
+            if course in tutor.courses:
+                tutors += [str(tutor)]
+        return tutors
 
-def get_tutors(course, data):
-    """
-    Return a list of all the tutors for a given course
-    course : string
-    """
-    tutors = []
-    for tutor in data:
-        if course in tutor.courses:
-            tutors += [str(tutor)]
-    return tutors
+    def get_course_tutors(self, data):
+        """
+        Returns a dictionary of all the courses tutored and who tutors them
+        data : a lists of 'Tutor's
+        """
+        tutored_courses = self.get_tutored_courses(data)
+        course_tutors = {}
+        for course in tutored_courses:
+            tutors = self.get_tutors(course, data)
+            course_tutors[course] = tutors
+        return course_tutors
 
-def get_course_tutors(data):
-    """
-    Returns a dictionary of all the courses tutored and who tutors them
-    data : a lists of 'Tutor's
-    """
-    tutored_courses = get_tutored_courses(data)
-    course_tutors = {}
-    for course in tutored_courses:
-        tutors = get_tutors(course, data)
-        course_tutors[course] = tutors
-    return course_tutors
-
-def get_course_tutor_file():
-    """
-    Output a .csv file of courses and tutors for them
-    """
-    data = buildDB()
-    course_tutors = get_course_tutors(data)
-    with open('out.csv', 'wb') as csvfile:
-        writer = csv.writer(csvfile)
-        for course in course_tutors:
-            tutor_list = course_tutors[course][0]
-            for tutor in course_tutors[course]:
-                tutor_list += ", " + tutor
-            writer.writerow([course, tutor_list])
+    def get_course_tutor_file(self):
+        """
+        Output a .csv file of courses and tutors for them
+        """
+        import csv
+        data = self.buildDB()
+        course_tutors = self.get_course_tutors(data)
+        with open('out.csv', 'wb') as csvfile:
+            writer = csv.writer(csvfile)
+            for course in course_tutors:
+                tutor_list = course_tutors[course][0]
+                for tutor in course_tutors[course]:
+                    tutor_list += ", " + tutor
+                writer.writerow([course, tutor_list])
 
 
 if __name__ == '__main__':
-    get_course_tutor_file()
+    ###########################################################
+    import time                                               #
+    start_time = time.time()                                  #
+    ###########################################################
+
+    ts = TutorScripts("tutors.csv")
+    ts.get_course_tutor_file()
+
+    ###########################################################
+    print "Run time: ", time.time() - start_time, " seconds"  #
+    ###########################################################
