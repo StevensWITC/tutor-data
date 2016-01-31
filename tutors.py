@@ -71,6 +71,7 @@ class TutorScripts:
 
     def __init__(self, filename):
         self._filename = filename
+        self._data = self.buildDB()
 
     def buildDB(self):
         """
@@ -99,39 +100,39 @@ class TutorScripts:
                 data = data + [tutor]
         return data
 
-    def get_tutored_courses(self, data):
+    def get_tutored_courses(self):
         """
         Return a list of all courses tutored now
         data : list of 'Tutor's
         """
         tutored_courses = []
-        for tutor in data:
+        for tutor in self._data:
             courses = tutor.courses
             for course in courses:
                 if not course in tutored_courses and not course is '':#had to add the second part because it kept adding '' for some reason
                     tutored_courses += [course]
         return tutored_courses
 
-    def get_tutors(self, course, data):
+    def get_tutors(self, course):
         """
         Return a list of all the tutors for a given course
         course : string
         """
         tutors = []
-        for tutor in data:
+        for tutor in self._data:
             if course in tutor.courses:
                 tutors += [str(tutor)]
         return tutors
 
-    def get_course_tutors(self, data):
+    def get_course_tutors(self):
         """
         Returns a dictionary of all the courses tutored and who tutors them
         data : a lists of 'Tutor's
         """
-        tutored_courses = self.get_tutored_courses(data)
+        tutored_courses = self.get_tutored_courses()
         course_tutors = {}
         for course in tutored_courses:
-            tutors = self.get_tutors(course, data)
+            tutors = self.get_tutors(course)
             course_tutors[course] = tutors
         return course_tutors
 
@@ -140,8 +141,7 @@ class TutorScripts:
         Output a .csv file of courses and tutors for them
         """
         import csv
-        data = self.buildDB()
-        course_tutors = self.get_course_tutors(data)
+        course_tutors = self.get_course_tutors()
         with open('out.csv', 'wb') as csvfile:
             writer = csv.writer(csvfile)
             for course in course_tutors:
