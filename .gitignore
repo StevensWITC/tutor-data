@@ -1,6 +1,7 @@
 #my stuff
 v/
 tutors.csv
+out.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
