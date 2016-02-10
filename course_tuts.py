@@ -12,9 +12,10 @@ if __name__ == '__main__':
             name = row[0]
             data[name]={}
             data[name]['sched']={}
+            #loop through the schedule cells and fill `data[name]['sched']` with the key:value pair of day_of_week:hours
             for x in range(6):
                 data[name]['sched'][days[x]] = row[x+1]
-            #print name + "    :    " + str(data[name]['sched'])
+            #`courses` is a list of the courses a tutor tutors
             data[name]['courses'] = row[8].split(", ")
 
     result  = {}
@@ -22,47 +23,60 @@ if __name__ == '__main__':
         Loop through `data` and fill `result` with courses and who tutors them
     """
     for tutor in data:
+        #for each course a tutor tutors
         for course in data[tutor]['courses']:
+            #if it's not in the result yet add the course
             if not course in result:
                 result[course] = {}
                 result[course]['tutors'] = []
+            #add the tutor to the list of tutors for the course
             result[course]['tutors'] += [tutor]
+            #initialize a dictionary to store the times the course is tutored each day
             result[course]['times'] = {}
 
+    """
+        Loop through the tutors for each course, and add the times they'll be in the center to the result dictionary
+    """
     for course in result:
         for tutor in result[course]['tutors']:
             for day in data[tutor]['sched']:
                 if not data[tutor]['sched'][day] == '':
                     if not day in result[course]['times']:
                         result[course]['times'][day] = []
-                    result[course]['times'][day] += [ data[tutor]['sched'][day] ]
+                    if not data[tutor]['sched'][day] in result[course]['times'][day]:
+                        result[course]['times'][day] += [ data[tutor]['sched'][day] ]
 
     with open('out.csv', 'wb') as csvfile:
         writer = csv.writer(csvfile)
+        #write some row headers
         writer.writerow([ 'Course', 'Tutors', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday' ])
+        #loop through all courses, each course will be a row on the csv
         for course in sorted(result):
             cell1 = course
             cell2 = []
             for tutor in sorted(result[course]['tutors']):
                 cell2 += [tutor]
+            #initialize cells to be empty in case there isn't anyone there for that day
             cell3 = ''
             cell4 = ''
             cell5 = ''
             cell6 = ''
             cell7 = ''
             cell8 = ''
+            #Fill the cells with the sorted times
             if 'Sunday' in result[course]['times']:
-                cell3 = result[course]['times']['Sunday']
+                cell3 = sorted(result[course]['times']['Sunday'])
             if 'Monday' in result[course]['times']:
-                cell4 = result[course]['times']['Monday']
+                cell4 = sorted(result[course]['times']['Monday'])
             if 'Tuesday' in result[course]['times']:
-                cell5 = result[course]['times']['Tuesday']
+                cell5 = sorted(result[course]['times']['Tuesday'])
             if 'Wednesday' in result[course]['times']:
-                cell6 = result[course]['times']['Wednesday']
+                cell6 = sorted(result[course]['times']['Wednesday'])
             if 'Thursday' in result[course]['times']:
-                cell7 = result[course]['times']['Thursday']
+                cell7 = sorted(result[course]['times']['Thursday'])
             if 'Friday' in result[course]['times']:
-                cell8 = result[course]['times']['Friday']
+                cell8 = sorted(result[course]['times']['Friday'])
+            #write the row with all the info
             writer.writerow([ cell1, cell2, cell3, cell4, cell5, cell6, cell7, cell8 ])
 
 
