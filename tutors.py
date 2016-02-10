@@ -17,7 +17,8 @@ class Tutor:
         self._last = last
         self._email = email
         self._courses = courses
-        self._sched = self.sched_parse(schedule)
+        #changed this for now because sched_parse needs to be updated for the new time format
+        self._sched = sched#self.sched_parse(schedule)
 
     def sched_parse(self, inDict):
         for day in inDict:
@@ -150,13 +151,13 @@ class TutorScripts:
             course_tutors[course] = tutors
         return course_tutors
 
-    def get_course_tutor_file(self):
+    def get_course_tutor_file(self, filename):
         """
         Output a .csv file of courses and tutors for them
         """
         import csv
         course_tutors = self.get_course_tutors()
-        with open('out.csv', 'wb') as csvfile:
+        with open(filename) as csvfile:
             writer = csv.writer(csvfile)
             for course in course_tutors:
                 tutor_list = course_tutors[course][0]
@@ -219,19 +220,55 @@ def make_sched():
                     m = t = w = r = f = s = "ERROR"
             writer.writerow([name, m, t, w, r, f, s])
 
+def proc_day(day):
+    if not day is '':
+        start = day.split('-')[0]
+        end = day.split('-')[-1]
+        if len(start) < 3:
+            start = start + ":00"
+        if len(end) < 3:
+            end = end + ":00"
+        day = start + '-' + end
+        return day
+    return ''
+
+def proc_days(day_arr):
+    for day in day_arr:
+        day = proc_day(day)
+    return day_arr
+
+
+def fix_times(in_file, out_file):
+    """
+    Takes the data from the .csv file and reformats time from #-# to ##:##-##:##
+    """
+    import csv
+    data = []
+    with open(in_file, 'rb') as i_f:
+        csv_read = csv.reader(i_f, delimiter=",")
+        with open(out_file, 'wb') as csvfile:
+            writer = csv.writer(csvfile)
+            count = 0
+            for row in csv_read:
+                day_arr = proc_days(row[1:7])
+                print row[0], day_arr[0], day_arr[1], day_arr[2], day_arr[3], day_arr[4], day_arr[5], row[7], row[8]
+                #writer.writerow( [row[0], day_arr[0], day_arr[1], day_arr[2], day_arr[3], day_arr[4], day_arr[5]], row[7], row[8] ])
+
+
 if __name__ == '__main__':
     ###########################################################
-    import time                                               #
-    start_time = time.time()                                  #
+    import time                                              ##
+    start_time = time.time()                                 ##
     ###########################################################
 
-    ts = TutorScripts("tutors.csv")
-    for tutor in ts.data:
-        print tutor
-        print "    " + str(tutor.courses)
-        print "    " + str(tutor.sched)
+    #ts = TutorScripts("tutors.csv")
 
-    #ts.get_course_tutor_file()
+    #for tutor in ts.data:
+    #    print tutor
+    #    print "    " + str(tutor.courses)
+    #    print "    " + str(tutor.sched)
+
+    #ts.get_course_tutor_file("out.csv")
 
     #sched = parse_sched()
     #for tutor in sched:
@@ -241,6 +278,8 @@ if __name__ == '__main__':
 
     #make_sched()
 
+    fix_times("tutors.csv", "out.csv")
+
     ###########################################################
-    print "Run time: ", time.time() - start_time, " seconds"  #
+    print "Run time: ", time.time() - start_time, " seconds" ##
     ###########################################################
