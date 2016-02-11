@@ -9,7 +9,8 @@ if __name__ == '__main__':
     with open('tutors.csv', 'rb') as f:
         csv_read = csv.reader(f, delimiter=",")
         for row in csv_read:
-            name = row[0]
+            temp_arr = row[0].split(', ')
+            name = temp_arr[1] + " " + temp_arr[0]
             data[name]={}
             data[name]['sched']={}
             #loop through the schedule cells and fill `data[name]['sched']` with the key:value pair of day_of_week:hours
@@ -29,7 +30,7 @@ if __name__ == '__main__':
             if not course in result:
                 result[course] = {}
                 result[course]['tutors'] = []
-            #add the tutor to the list of tutors for the course
+            #add the tutor to the list of tutors for the course, now as 'first last'
             result[course]['tutors'] += [tutor]
             #initialize a dictionary to store the times the course is tutored each day
             result[course]['times'] = {}
@@ -63,6 +64,22 @@ if __name__ == '__main__':
             cell6 = ''
             cell7 = ''
             cell8 = ''
+
+            ###################################################
+            ## TODO: Take the sorted list and put it through a
+            ## function or something to look at each element.
+            ## If the first number of the second one is bigger
+            ## than the second of the first, they can be
+            ## combined. Edge cases with 10/11/12
+            ###################################################
+
+            ###################################################
+            ## Another idea: I could get the names for all the
+            ## courses by using web.stevens.edu/sit/courses/
+            ## ?courseID=<AA>%20<###> then parsing the page for
+            ## the name of the course
+            ###################################################
+
             #Fill the cells with the sorted times
             if 'Sunday' in result[course]['times']:
                 cell3 = sorted(result[course]['times']['Sunday'])
